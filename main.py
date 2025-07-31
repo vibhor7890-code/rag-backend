@@ -14,7 +14,7 @@ app = FastAPI()
 # Load config
 SUPABASE_URL = "https://rrszjwwsddrtkltomjkh.supabase.co"
 SUPABASE_KEY = "sb_publishable_YaJyiHBaNtOlC30oog6lDg_D7tiMRmt"
-SUPABASE_BUCKET_NAME = "documents"
+SUPABASE_BUCKET_NAME = "customer-documents"
 WEAVIATE_URL = "https://0d9dwglxtsqxkapzbxhpra.c0.asia-southeast1.gcp.weaviate.cloud"
 WEAVIATE_USERNAME = "vibhor.goyal@woodenstreet.com"
 WEAVIATE_PASSWORD = "Vibhor@7890"
@@ -36,41 +36,24 @@ client = weaviate.Client(
 def read_root():
     return {"message": "RAG Backend is Live 🎉"}
 
-
 @app.get("/list-files")
 def list_files():
     try:
-        headers = {
-            "apikey": SUPABASE_KEY,
-            "Authorization": f"Bearer {SUPABASE_KEY}"
-        }
+        DOCUMENT_PATHS = [
+            "Defective_Product_Policy.pdf",
+            "Installation_List.csv",
+            "Order_List.csv",
+            "Warranty_Claim_Policy.pdf",
+            "Different_Product_Received_Policy.pdf"
+        ]
+        signed_urls = []
+        for path in DOCUMENT_PATHS:
+            res = supabase.storage.from_(SUPABASE_BUCKET_NAME).create_signed_url(path, 3600)
+            signed_urls.append(res['signedURL'])
 
-        # List files in root of bucket
-        url_root = f"{SUPABASE_URL}/storage/v1/object/list/{SUPABASE_BUCKET_NAME}?limit=100"
-        root_resp = requests.get(url_root, headers=headers)
-        root_files = root_resp.json()
-
-        # # List files inside 'documents/' folder
-        # url_folder = f"{SUPABASE_URL}/storage/v1/object/list/{SUPABASE_BUCKET_NAME}?prefix=documents/&limit=100"
-        # folder_resp = requests.get(url_folder, headers=headers)
-        # folder_files = folder_resp.json()
-
-        # Combine file URLs
-        file_urls = []
-
-        for item in root_files:
-            if isinstance(item, dict) and "name" in item:
-                file_url = f"{SUPABASE_URL}/storage/v1/object/public/{SUPABASE_BUCKET_NAME}/{item['name']}"
-                file_urls.append(file_url)
-
-        # for item in folder_files:
-        #     if isinstance(item, dict) and "name" in item:
-        #         file_url = f"{SUPABASE_URL}/storage/v1/object/public/{SUPABASE_BUCKET_NAME}/{item['name']}"
-        #         file_urls.append(file_url)
-
-        return {"files": file_urls}
+        return {"files": signed_urls}
     except Exception as e:
-        return JSONResponse(content={"error": str(e)}, status_code=500)
+        return {"error": str(e)}
 
 
 
