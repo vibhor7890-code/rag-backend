@@ -32,27 +32,25 @@ supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 @app.get("/list-files")
 def list_files():
     try:
-        # List all folders/files at the root of the bucket
-        root_items = supabase.storage.from_(SUPABASE_BUCKET_NAME).list("", {"limit": 100})
-        print("Root items:", root_items)
+        all_items = supabase.storage.from_(SUPABASE_BUCKET_NAME).list("", {"limit": 1000, "offset": 0})
 
-        # Now check inside "customer-documents" folder
-        customer_items = supabase.storage.from_(SUPABASE_BUCKET_NAME).list("customer-documents", {"limit": 100})
-        print("Customer-documents folder items:", customer_items)
+        print("ALL items in bucket:", all_items)
 
         file_urls = []
 
-        for file in customer_items:
-            if file.get("name"):  # check if it's a file
+        for item in all_items:
+            path = item.get("name")
+            if path and path.startswith("customer-documents/"):
+                filename = path.split("/")[-1]
                 file_url = (
-                    "https://rrszjwwsddrtkltomjkh.supabase.co/storage/v1/object/public/customer-documents/f{file['name']}"
+                    f"https://{SUPABASE_URL.split('//')[-1]}/storage/v1/object/public/"
+                    f"{SUPABASE_BUCKET_NAME}/{path}"
                 )
                 file_urls.append(file_url)
 
         return {"files": file_urls}
     except Exception as e:
         return {"error": str(e)}
-
 
 
         
