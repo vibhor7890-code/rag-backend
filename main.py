@@ -32,9 +32,12 @@ supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 @app.get("/list-files")
 def list_files():
     try:
-        files = supabase.storage.from_(SUPABASE_BUCKET_NAME).list()
-        file_names = [file['name'] for file in files]
-        return {"files": file_names}
+        files = supabase.storage.from_(SUPABASE_BUCKET_NAME).list("", {"limit": 100})
+        file_urls = [
+            f"https://{SUPABASE_URL.split('//')[-1]}/storage/v1/object/public/{SUPABASE_BUCKET_NAME}/{file['name']}"
+            for file in files
+        ]
+        return {"files": file_urls}
     except Exception as e:
         return {"error": str(e)}
         
