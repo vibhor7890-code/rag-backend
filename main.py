@@ -32,7 +32,7 @@ supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 @app.get("/list-files")
 def list_files():
     try:
-        all_items = supabase.storage.from_(SUPABASE_BUCKET_NAME).list("", {"limit": 1000, "offset": 0})
+        all_items = supabase.storage.from_(customer-documents).list("documents", {"limit": 1000, "offset": 0})
 
         print("ALL items in bucket:", all_items)
 
