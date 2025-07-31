@@ -1,2 +1,8 @@
 fastapi
 uvicorn
+weaviate-client
+supabase
+httpx
+python-dotenv
+tqdm
+sentence-transformers
