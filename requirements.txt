@@ -9,3 +9,4 @@ sentence-transformers
 requests
 pandas
 fitz
+langchain.text_splitter
