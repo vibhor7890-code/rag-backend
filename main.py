@@ -32,14 +32,17 @@ supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 @app.get("/list-files")
 def list_files():
     try:
-        files = supabase.storage.from_(SUPABASE_BUCKET_NAME).list("", {"limit": 100})
+        result = supabase.storage.from_(SUPABASE_BUCKET_NAME).list("", {"limit": 100})
+        print("SUPABASE RAW LIST RESULT:", result) 
         file_urls = [
             f"https://{SUPABASE_URL.split('//')[-1]}/storage/v1/object/public/{SUPABASE_BUCKET_NAME}/{file['name']}"
-            for file in files
+            for file in result
         ]
         return {"files": file_urls}
     except Exception as e:
         return {"error": str(e)}
+
+
         
 # Setup Weaviate client
 client = weaviate.Client(
