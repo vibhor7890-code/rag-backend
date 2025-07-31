@@ -40,11 +40,11 @@ def read_root():
 def list_files():
     try:
         DOCUMENT_PATHS = [
-            "Defective_Product_Policy.pdf",
-            "Installation_List.csv",
-            "Order_List.csv",
-            "Warranty_Claim_Policy.pdf",
-            "Different_Product_Received_Policy.pdf"
+            "/Defective_Product_Policy.pdf",
+            "/Installation_List.csv",
+            "/Order_List.csv",
+            "/Warranty_Claim_Policy.pdf",
+            "/Different_Product_Received_Policy.pdf"
         ]
         signed_urls = []
         for path in DOCUMENT_PATHS:
