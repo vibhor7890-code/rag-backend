@@ -8,7 +8,17 @@ import os
 from supabase import create_client
 import weaviate
 from weaviate.auth import AuthClientPassword
-import uuid
+import uuid for item in all_items:
+            path = item.get("name")
+            if path and path.startswith("customer-documents/"):
+                filename = path.split("/")[-1]
+                file_url = (
+                    f"https://{SUPABASE_URL.split('//')[-1]}/storage/v1/object/public/"
+                    f"{SUPABASE_BUCKET_NAME}/{path}"
+                )
+                file_urls.append(file_url)
+
+        return {"files": file_urls}
 import requests
 
 app = FastAPI()
@@ -38,17 +48,18 @@ def list_files():
 
         file_urls = []
 
-        for item in all_items:
-            path = item.get("name")
-            if path and path.startswith("customer-documents/"):
-                filename = path.split("/")[-1]
-                file_url = (
-                    f"https://{SUPABASE_URL.split('//')[-1]}/storage/v1/object/public/"
-                    f"{SUPABASE_BUCKET_NAME}/{path}"
-                )
-                file_urls.append(file_url)
+        # for item in all_items:
+        #     path = item.get("name")
+        #     if path and path.startswith("customer-documents/"):
+        #         filename = path.split("/")[-1]
+        #         file_url = (
+        #             f"https://{SUPABASE_URL.split('//')[-1]}/storage/v1/object/public/"
+        #             f"{SUPABASE_BUCKET_NAME}/{path}"
+        #         )
+        #         file_urls.append(file_url)
 
-        return {"files": file_urls}
+        # return {"files": file_urls}
+        return (all_items)
     except Exception as e:
         return {"error": str(e)}
 
