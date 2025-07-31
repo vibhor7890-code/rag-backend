@@ -50,23 +50,23 @@ def list_files():
         root_resp = requests.get(url_root, headers=headers)
         root_files = root_resp.json()
 
-        # List files inside 'documents/' folder
+        # # List files inside 'documents/' folder
         # url_folder = f"{SUPABASE_URL}/storage/v1/object/list/{SUPABASE_BUCKET_NAME}?prefix=documents/&limit=100"
         # folder_resp = requests.get(url_folder, headers=headers)
         # folder_files = folder_resp.json()
 
-        # Combine all paths into full public URLs
+        # Combine file URLs
         file_urls = []
 
         for item in root_files:
-            name = item.get("name")
-            file_url = f"{SUPABASE_URL}/storage/v1/object/public/{SUPABASE_BUCKET_NAME}/{name}"
-            file_urls.append(file_url)
+            if isinstance(item, dict) and "name" in item:
+                file_url = f"{SUPABASE_URL}/storage/v1/object/public/{SUPABASE_BUCKET_NAME}/{item['name']}"
+                file_urls.append(file_url)
 
         # for item in folder_files:
-        #     name = item.get("name")
-        #     file_url = f"{SUPABASE_URL}/storage/v1/object/public/{SUPABASE_BUCKET_NAME}/{name}"
-        #     file_urls.append(file_url)
+        #     if isinstance(item, dict) and "name" in item:
+        #         file_url = f"{SUPABASE_URL}/storage/v1/object/public/{SUPABASE_BUCKET_NAME}/{item['name']}"
+        #         file_urls.append(file_url)
 
         return {"files": file_urls}
     except Exception as e:
