@@ -14,7 +14,7 @@ app = FastAPI()
 # Load config
 SUPABASE_URL = "https://rrszjwwsddrtkltomjkh.supabase.co"
 SUPABASE_KEY = "sb_publishable_YaJyiHBaNtOlC30oog6lDg_D7tiMRmt"
-SUPABASE_BUCKET_NAME = "customer-documents"
+SUPABASE_BUCKET_NAME = "documents"
 WEAVIATE_URL = "https://0d9dwglxtsqxkapzbxhpra.c0.asia-southeast1.gcp.weaviate.cloud"
 WEAVIATE_USERNAME = "vibhor.goyal@woodenstreet.com"
 WEAVIATE_PASSWORD = "Vibhor@7890"
@@ -49,14 +49,14 @@ def list_files():
                 file_url = f"https://{SUPABASE_URL.split('//')[-1]}/storage/v1/object/public/{SUPABASE_BUCKET_NAME}/{path}"
                 file_urls.append(file_url)
 
-        # 2️⃣ List from 'documents/' folder
-        folder_items = supabase.storage.from_(SUPABASE_BUCKET_NAME).list("documents", {"limit": 1000})
-        for item in folder_items:
-            path = "documents/" + item.get("name")
-            if path:
-                file_url = f"https://{SUPABASE_URL.split('//')[-1]}/storage/v1/object/public/{SUPABASE_BUCKET_NAME}/{path}"
-                file_urls.append(file_url)
-        return root_items,  folder_items
+        # # 2️⃣ List from 'documents/' folder
+        # folder_items = supabase.storage.from_(SUPABASE_BUCKET_NAME).list("documents", {"limit": 1000})
+        # for item in folder_items:
+        #     path = "documents/" + item.get("name")
+        #     if path:
+        #         file_url = f"https://{SUPABASE_URL.split('//')[-1]}/storage/v1/object/public/{SUPABASE_BUCKET_NAME}/{path}"
+        #         file_urls.append(file_url)
+        return root_items
         # return {"files": file_urls}
     except Exception as e:
         return JSONResponse(content={"error": str(e)}, status_code=500)
