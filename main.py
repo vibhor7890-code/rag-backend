@@ -36,30 +36,43 @@ client = weaviate.Client(
 def read_root():
     return {"message": "RAG Backend is Live 🎉"}
 
+
 @app.get("/list-files")
 def list_files():
     try:
+        headers = {
+            "apikey": SUPABASE_KEY,
+            "Authorization": f"Bearer {SUPABASE_KEY}"
+        }
+
+        # List files in root of bucket
+        url_root = f"{SUPABASE_URL}/storage/v1/object/list/{SUPABASE_BUCKET_NAME}?limit=100"
+        root_resp = requests.get(url_root, headers=headers)
+        root_files = root_resp.json()
+
+        # List files inside 'documents/' folder
+        # url_folder = f"{SUPABASE_URL}/storage/v1/object/list/{SUPABASE_BUCKET_NAME}?prefix=documents/&limit=100"
+        # folder_resp = requests.get(url_folder, headers=headers)
+        # folder_files = folder_resp.json()
+
+        # Combine all paths into full public URLs
         file_urls = []
 
-        # 1️⃣ List from root of bucket
-        root_items = supabase.storage.from_(SUPABASE_BUCKET_NAME).list("", {"limit": 1000})
-        for item in root_items:
-            path = item.get("name")
-            if path:
-                file_url = f"https://{SUPABASE_URL.split('//')[-1]}/storage/v1/object/public/{SUPABASE_BUCKET_NAME}/{path}"
-                file_urls.append(file_url)
+        for item in root_files:
+            name = item.get("name")
+            file_url = f"{SUPABASE_URL}/storage/v1/object/public/{SUPABASE_BUCKET_NAME}/{name}"
+            file_urls.append(file_url)
 
-        # # 2️⃣ List from 'documents/' folder
-        # folder_items = supabase.storage.from_(SUPABASE_BUCKET_NAME).list("documents", {"limit": 1000})
-        # for item in folder_items:
-        #     path = "documents/" + item.get("name")
-        #     if path:
-        #         file_url = f"https://{SUPABASE_URL.split('//')[-1]}/storage/v1/object/public/{SUPABASE_BUCKET_NAME}/{path}"
-        #         file_urls.append(file_url)
-        return root_items
-        # return {"files": file_urls}
+        # for item in folder_files:
+        #     name = item.get("name")
+        #     file_url = f"{SUPABASE_URL}/storage/v1/object/public/{SUPABASE_BUCKET_NAME}/{name}"
+        #     file_urls.append(file_url)
+
+        return {"files": file_urls}
     except Exception as e:
         return JSONResponse(content={"error": str(e)}, status_code=500)
+
+
 
 @app.get("/test/supabase")
 def test_supabase():
