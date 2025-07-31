@@ -1,74 +1,85 @@
 from fastapi import FastAPI
-import uvicorn
+from fastapi.responses import JSONResponse
+
+import pandas as pd
+import fitz  # PyMuPDF
 import os
+
+from supabase import create_client
+from weaviate.util import get_valid_uuid
+import weaviate
+import uuid
+import requests
 
 app = FastAPI()
 
-@app.get("/")
-def read_root():
-    return {"message": "RAG backend is running!"}
+# Load env vars (Render auto-loads them from settings)
+SUPABASE_URL = os.getenv("SUPABASE_URL")
+SUPABASE_KEY = os.getenv("SUPABASE_KEY")
+SUPABASE_BUCKET_NAME = os.getenv("SUPABASE_BUCKET_NAME")
+WEAVIATE_URL = os.getenv("WEAVIATE_URL")
+GROQ_API_KEY = os.getenv("GROQ_API_KEY")
 
-# Run the app when deployed on Render
-if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 10000))
-    uvicorn.run("main:app", host="0.0.0.0", port=port)
+# Setup Supabase client
+supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 
-
-import weaviate
-import pandas as pd
-import fitz  # PyMuPDF
-import requests
-from supabase import create_client
-from langchain.text_splitter import RecursiveCharacterTextSplitter
-from sentence_transformers import SentenceTransformer
-
-# Setup Supabase
-supabase = create_client(os.getenv("SUPABASE_URL"), os.getenv("SUPABASE_KEY"))
-
-# Setup Weaviate
+# Setup Weaviate client
 client = weaviate.Client(
-    url=os.getenv("WEAVIATE_URL"),
-    additional_headers={"X-OpenAI-Api-Key": ""}  # leave empty if not needed
+    url=WEAVIATE_URL,
+    additional_headers={
+        "X-OpenAI-Api-Key": "",  # Not required for public instance
+    }
 )
 
-# Embedding model
-embedder = SentenceTransformer("BAAI/bge-base-en-v1.5")
-splitter = RecursiveCharacterTextSplitter(chunk_size=500, chunk_overlap=50)
 
-def read_pdf_text(url):
-    resp = requests.get(url)
-    doc = fitz.open(stream=resp.content, filetype="pdf")
-    return "\n".join(page.get_text() for page in doc)
+@app.get("/")
+def read_root():
+    return {"message": "RAG Backend is Live 🎉"}
 
-def index_document_in_weaviate(content, metadata):
-    texts = splitter.split_text(content)
-    vectors = embedder.encode(texts).tolist()
-    for text, vector in zip(texts, vectors):
-        client.data_object.create(
-            {"text": text, **metadata},
-            class_name="CustomerDocs",
-            vector=vector
-        )
 
-@app.get("/index-all")
-def index_all_files():
-    # Create class in Weaviate (if not already)
-    if not client.schema.contains({"class": "CustomerDocs"}):
-        client.schema.create_class({
-            "class": "CustomerDocs",
-            "vectorizer": "none",
-            "properties": [{"name": "text", "dataType": ["text"]}]
+@app.get("/test/supabase")
+def test_supabase():
+    try:
+        result = supabase.storage.from_(SUPABASE_BUCKET_NAME).list()
+        return {"status": "success", "files": result}
+    except Exception as e:
+        return JSONResponse(content={"error": str(e)}, status_code=500)
+
+
+@app.get("/test/weaviate")
+def test_weaviate():
+    try:
+        if client.is_ready():
+            return {"status": "Weaviate connected ✅"}
+        else:
+            return JSONResponse(content={"error": "Weaviate not ready"}, status_code=500)
+    except Exception as e:
+        return JSONResponse(content={"error": str(e)}, status_code=500)
+
+
+@app.get("/test/pandas")
+def test_pandas():
+    try:
+        df = pd.DataFrame({
+            "order_id": [101, 102],
+            "customer": ["Alice", "Bob"]
         })
+        return df.to_dict()
+    except Exception as e:
+        return JSONResponse(content={"error": str(e)}, status_code=500)
 
-    bucket = os.getenv("SUPABASE_BUCKET_NAME")
 
-    files = supabase.storage.from_(bucket).list()
-    for file in files:
-        file_url = f"{os.getenv('SUPABASE_URL')}/storage/v1/object/public/{bucket}/{file['name']}"
-        if file["name"].endswith(".csv"):
-            df = pd.read_csv(file_url)
-            index_document_in_weaviate(df.to_csv(index=False), {"filename": file["name"]})
-        elif file["name"].endswith(".pdf"):
-            pdf_text = read_pdf_text(file_url)
-            index_document_in_weaviate(pdf_text, {"filename": file["name"]})
-    return {"status": "Files indexed to Weaviate"}
+@app.get("/test/pdf")
+def test_pdf():
+    try:
+        file_path = "sample.pdf"
+        if not os.path.exists(file_path):
+            return {"message": "sample.pdf not found. Please upload it."}
+
+        with fitz.open(file_path) as pdf:
+            text = ""
+            for page in pdf:
+                text += page.get_text()
+        return {"content": text[:500]}  # return only 1st 500 characters
+    except Exception as e:
+        return JSONResponse(content={"error": str(e)}, status_code=500)
