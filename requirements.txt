@@ -6,6 +6,4 @@ python-dotenv
 weaviate-client
 requests
 supabase
-fitz
-langchain.text_splitter
-sentence-transformers
+
