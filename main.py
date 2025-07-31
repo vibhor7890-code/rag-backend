@@ -32,10 +32,12 @@ supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 @app.get("/list-files")
 def list_files():
     try:
-        result = supabase.storage.from_(SUPABASE_BUCKET_NAME).list("", {"limit": 100})
-        print("SUPABASE RAW LIST RESULT:", result) 
+        # Use .list with full path like "your-folder/"
+        result = supabase.storage.from_(SUPABASE_BUCKET_NAME).list("customer-documents", {"limit": 100})
+        print("SUPABASE RAW LIST RESULT:", result)
+
         file_urls = [
-            f"https://{SUPABASE_URL.split('//')[-1]}/storage/v1/object/public/{SUPABASE_BUCKET_NAME}/{file['name']}"
+            f"https://{SUPABASE_URL.split('//')[-1]}/storage/v1/object/public/{SUPABASE_BUCKET_NAME}/customer-documents/{file['name']}"
             for file in result
         ]
         return {"files": file_urls}
