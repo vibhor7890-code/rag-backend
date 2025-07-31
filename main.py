@@ -29,7 +29,15 @@ GROQ_API_KEY = "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"
 
 # Setup Supabase client
 supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
-
+@app.get("/list-files")
+def list_files():
+    try:
+        files = supabase.storage.from_(SUPABASE_BUCKET_NAME).list()
+        file_names = [file['name'] for file in files]
+        return {"files": file_names}
+    except Exception as e:
+        return {"error": str(e)}
+        
 # Setup Weaviate client
 client = weaviate.Client(
     url=WEAVIATE_URL,
