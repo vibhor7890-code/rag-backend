@@ -16,10 +16,14 @@ app = FastAPI()
 # Load env vars (Render auto-loads them from settings)
 SUPABASE_URL = "https://rrszjwwsddrtkltomjkh.supabase.co"
 # os.getenv("SUPABASE_URL")
-SUPABASE_KEY = os.getenv("SUPABASE_KEY")
-SUPABASE_BUCKET_NAME = os.getenv("SUPABASE_BUCKET_NAME")
-WEAVIATE_URL = os.getenv("WEAVIATE_URL")
-GROQ_API_KEY = os.getenv("GROQ_API_KEY")
+SUPABASE_KEY = "sb_publishable_YaJyiHBaNtOlC30oog6lDg_D7tiMRmt"
+# os.getenv("SUPABASE_KEY")
+SUPABASE_BUCKET_NAME = "customer-documents"
+# os.getenv("SUPABASE_BUCKET_NAME")
+WEAVIATE_URL = "https://0d9dwglxtsqxkapzbxhpra.c0.asia-southeast1.gcp.weaviate.cloud"
+# os.getenv("WEAVIATE_URL")
+GROQ_API_KEY = "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"
+# os.getenv("GROQ_API_KEY")
 
 # Setup Supabase client
 supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
