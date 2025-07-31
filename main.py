@@ -38,22 +38,15 @@ def read_root():
 
 @app.get("/list-files")
 def list_files():
-    try:
-        DOCUMENT_PATHS = [
-            "/Defective_Product_Policy.pdf",
-            "/Installation_List.csv",
-            "/Order_List.csv",
-            "/Warranty_Claim_Policy.pdf",
-            "/Different_Product_Received_Policy.pdf"
-        ]
-        signed_urls = []
-        for path in DOCUMENT_PATHS:
-            res = supabase.storage.from_(SUPABASE_BUCKET_NAME).create_signed_url(path, 3600)
-            signed_urls.append(res['signedURL'])
-
-        return {"files": signed_urls}
-    except Exception as e:
-        return {"error": str(e)}
+    # ✅ Use direct public URLs manually
+    file_urls = [
+        "https://rrszjwwsddrtkltomjkh.supabase.co/storage/v1/object/public/customer-documents//Defective_Product_Policy.pdf",
+        "https://rrszjwwsddrtkltomjkh.supabase.co/storage/v1/object/public/customer-documents//Different_Product_Received_Policy.pdf",
+        "https://rrszjwwsddrtkltomjkh.supabase.co/storage/v1/object/public/customer-documents//Installation_List.csv",
+        "https://rrszjwwsddrtkltomjkh.supabase.co/storage/v1/object/public/customer-documents//Order_List.csv",
+        "https://rrszjwwsddrtkltomjkh.supabase.co/storage/v1/object/public/customer-documents//Warranty_Claim_Policy.pdf"
+    ]
+    return {"files": file_urls}
 
 
 
