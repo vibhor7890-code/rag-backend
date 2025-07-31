@@ -14,7 +14,8 @@ import requests
 app = FastAPI()
 
 # Load env vars (Render auto-loads them from settings)
-SUPABASE_URL = os.getenv("SUPABASE_URL")
+SUPABASE_URL = "https://rrszjwwsddrtkltomjkh.supabase.co"
+# os.getenv("SUPABASE_URL")
 SUPABASE_KEY = os.getenv("SUPABASE_KEY")
 SUPABASE_BUCKET_NAME = os.getenv("SUPABASE_BUCKET_NAME")
 WEAVIATE_URL = os.getenv("WEAVIATE_URL")
