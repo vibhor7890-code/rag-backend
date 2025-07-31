@@ -41,27 +41,31 @@ client = weaviate.Client(
 def read_root():
     return {"message": "RAG Backend is Live 🎉"}
 
-@app.get("/list-files")
-def list_files():
-    # ✅ Use direct public URLs manually
-    file_urls = [
-        "https://rrszjwwsddrtkltomjkh.supabase.co/storage/v1/object/public/customer-documents//Defective_Product_Policy.pdf",
-        "https://rrszjwwsddrtkltomjkh.supabase.co/storage/v1/object/public/customer-documents//Different_Product_Received_Policy.pdf",
-        "https://rrszjwwsddrtkltomjkh.supabase.co/storage/v1/object/public/customer-documents//Installation_List.csv",
-        "https://rrszjwwsddrtkltomjkh.supabase.co/storage/v1/object/public/customer-documents//Order_List.csv",
-        "https://rrszjwwsddrtkltomjkh.supabase.co/storage/v1/object/public/customer-documents//Warranty_Claim_Policy.pdf"
-    ]
-    return {"files": file_urls}
+# @app.get("/list-files")
+# def list_files():
+#     # ✅ Use direct public URLs manually
+#     file_urls = [
+#         "https://rrszjwwsddrtkltomjkh.supabase.co/storage/v1/object/public/customer-documents//Defective_Product_Policy.pdf",
+#         "https://rrszjwwsddrtkltomjkh.supabase.co/storage/v1/object/public/customer-documents//Different_Product_Received_Policy.pdf",
+#         "https://rrszjwwsddrtkltomjkh.supabase.co/storage/v1/object/public/customer-documents//Installation_List.csv",
+#         "https://rrszjwwsddrtkltomjkh.supabase.co/storage/v1/object/public/customer-documents//Order_List.csv",
+#         "https://rrszjwwsddrtkltomjkh.supabase.co/storage/v1/object/public/customer-documents//Warranty_Claim_Policy.pdf"
+#     ]
+#     return {"files": file_urls}
 
-embed_model = SentenceTransformer("sentence-transformers/all-MiniLM-L6-v2")
-@app.get("/ingest-docs")
+embed_model = SentenceTransformer("thenlper/gte-small")
 def ingest_documents():
     try:
         # Step 1: List files
         result = supabase.storage.from_(SUPABASE_BUCKET_NAME).list("", {"limit": 1000})
         urls = [
-            f"https://{SUPABASE_URL.split('//')[-1]}/storage/v1/object/public/{SUPABASE_BUCKET_NAME}/{item['name']}"
-            for item in result if item["name"].endswith((".pdf", ".csv"))
+            "https://rrszjwwsddrtkltomjkh.supabase.co/storage/v1/object/public/customer-documents//Defective_Product_Policy.pdf",
+            "https://rrszjwwsddrtkltomjkh.supabase.co/storage/v1/object/public/customer-documents//Different_Product_Received_Policy.pdf",
+            "https://rrszjwwsddrtkltomjkh.supabase.co/storage/v1/object/public/customer-documents//Installation_List.csv",
+            "https://rrszjwwsddrtkltomjkh.supabase.co/storage/v1/object/public/customer-documents//Order_List.csv",
+            "https://rrszjwwsddrtkltomjkh.supabase.co/storage/v1/object/public/customer-documents//Warranty_Claim_Policy.pdf"
+            # f"https://{SUPABASE_URL.split('//')[-1]}/storage/v1/object/public/{SUPABASE_BUCKET_NAME}/{item['name']}"
+            # for item in result if item["name"].endswith((".pdf", ".csv"))
         ]
         
         if not urls:
