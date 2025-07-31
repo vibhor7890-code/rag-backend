@@ -56,8 +56,8 @@ def list_files():
             if path:
                 file_url = f"https://{SUPABASE_URL.split('//')[-1]}/storage/v1/object/public/{SUPABASE_BUCKET_NAME}/{path}"
                 file_urls.append(file_url)
-
-        return {"files": file_urls  root_items  folder_items}
+        return root_items,  folder_items
+        # return {"files": file_urls}
     except Exception as e:
         return JSONResponse(content={"error": str(e)}, status_code=500)
 
