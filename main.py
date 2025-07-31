@@ -9,6 +9,11 @@ from supabase import create_client
 import weaviate
 from weaviate.auth import AuthClientPassword
 
+from sentence_transformers import SentenceTransformer
+from langchain.text_splitter import RecursiveCharacterTextSplitter
+
+import tempfile
+
 app = FastAPI()
 
 # Load config
@@ -48,7 +53,61 @@ def list_files():
     ]
     return {"files": file_urls}
 
+embed_model = SentenceTransformer("sentence-transformers/all-MiniLM-L6-v2")
+@app.get("/ingest-docs")
+def ingest_documents():
+    try:
+        # Step 1: List files
+        result = supabase.storage.from_(SUPABASE_BUCKET_NAME).list("", {"limit": 1000})
+        urls = [
+            f"https://{SUPABASE_URL.split('//')[-1]}/storage/v1/object/public/{SUPABASE_BUCKET_NAME}/{item['name']}"
+            for item in result if item["name"].endswith((".pdf", ".csv"))
+        ]
+        
+        if not urls:
+            return {"message": "No PDF or CSV files found."}
 
+        for url in urls:
+            response = requests.get(url)
+            if response.status_code != 200:
+                continue
+
+            with tempfile.NamedTemporaryFile(delete=False) as tmp_file:
+                tmp_file.write(response.content)
+                file_path = tmp_file.name
+
+            # Extract content
+            if url.endswith(".pdf"):
+                with fitz.open(file_path) as pdf:
+                    text = ""
+                    for page in pdf:
+                        text += page.get_text()
+            elif url.endswith(".csv"):
+                df = pd.read_csv(file_path)
+                text = df.to_string()
+            else:
+                continue
+
+            # Chunk text
+            splitter = RecursiveCharacterTextSplitter(chunk_size=500, chunk_overlap=50)
+            chunks = splitter.split_text(text)
+
+            # Embed and upload to Weaviate
+            for i, chunk in enumerate(chunks):
+                embedding = embed_model.encode(chunk).tolist()
+                client.data_object.create(
+                    {
+                        "text": chunk,
+                        "source": url
+                    },
+                    class_name="Document",
+                    vector=embedding
+                )
+
+        return {"status": "success", "message": "Documents processed and embedded."}
+
+    except Exception as e:
+        return {"error": str(e)}
 
 @app.get("/test/supabase")
 def test_supabase():
