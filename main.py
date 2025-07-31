@@ -45,8 +45,7 @@ def list_files():
         for file in customer_items:
             if file.get("name"):  # check if it's a file
                 file_url = (
-                    f"https://{SUPABASE_URL.split('//')[-1]}/storage/v1/object/public/"
-                    f"/customer-documents/{file['name']}"
+                    "https://rrszjwwsddrtkltomjkh.supabase.co/storage/v1/object/public/customer-documents/f{file['name']}"
                 )
                 file_urls.append(file_url)
 
