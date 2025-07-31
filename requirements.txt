@@ -8,3 +8,4 @@ tqdm
 sentence-transformers
 requests
 pandas
+fitz
