@@ -6,8 +6,8 @@ import fitz  # PyMuPDF
 import os
 
 from supabase import create_client
-from weaviate.util import get_valid_uuid
 import weaviate
+from weaviate.auth import AuthClientPassword
 import uuid
 import requests
 
@@ -22,6 +22,8 @@ SUPABASE_BUCKET_NAME = "customer-documents"
 # os.getenv("SUPABASE_BUCKET_NAME")
 WEAVIATE_URL = "https://0d9dwglxtsqxkapzbxhpra.c0.asia-southeast1.gcp.weaviate.cloud"
 # os.getenv("WEAVIATE_URL")
+WEAVIATE_USERNAME = "vibhor.goyal@woodenstreet.com"
+WEAVIATE_PASSWORD = "Vibhor@7890"
 GROQ_API_KEY = "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"
 # os.getenv("GROQ_API_KEY")
 
@@ -31,9 +33,10 @@ supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 # Setup Weaviate client
 client = weaviate.Client(
     url=WEAVIATE_URL,
-    additional_headers={
-        "X-OpenAI-Api-Key": "",  # Not required for public instance
-    }
+    auth_client_secret=AuthClientPassword(
+        username=WEAVIATE_USERNAME,
+        password=WEAVIATE_PASSWORD
+    )
 )
 
 
