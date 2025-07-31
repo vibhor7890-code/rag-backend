@@ -6,4 +6,5 @@ python-dotenv
 weaviate-client>=3.26.7,<4.0.0
 requests
 supabase
-
+sentence-transformers
+langchain
